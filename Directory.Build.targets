@@ -3,7 +3,7 @@
 
   <ItemGroup Condition="'$(IsPackable)'=='True'">
     <None Include="..\..\asset\serilog-sink-nuget.png" Pack="true" Visible="false" PackagePath="images\icon.png" />
-    <None Include="..\..\README.md" Pack="true" Visible="true" PackagePath="\" />
+    <None Include="package.readme.md" Pack="true" Visible="true" PackagePath="\" />
     <None Include="..\..\Changelog.md" Pack="true" Visible="true" PackagePath="\" />
   </ItemGroup>
 
