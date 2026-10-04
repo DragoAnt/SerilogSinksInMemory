@@ -4,11 +4,10 @@
   <PropertyGroup>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <PackageIcon>images\icon.png</PackageIcon>
-    <PackageIconUrl>https://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/vfofanov/SerilogSinksInMemory/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/DragoAnt/SerilogSinksInMemory/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/vfofanov/SerilogSinksInMemory/</RepositoryUrl>
+    <RepositoryUrl>https://github.com/DragoAnt/SerilogSinksInMemory/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>package.readme.md</PackageReadmeFile>
   </PropertyGroup>
 </Project>

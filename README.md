@@ -1,590 +1,93 @@
-# Serilog.Sinks.InMemory
+# DragoAnt.Serilog.Sinks.InMemory
 
-In-memory sink for Serilog to use for testing with [FluentAssertions](https://fluentassertions.com/), [AwesomeAssertions](https://github.com/AwesomeAssertions/AwesomeAssertions) or [Shouldly](https://docs.shouldly.org/) support for easy-to-write assertions.
+An in-memory Serilog sink for tests, with fluent log assertions that work the same on FluentAssertions, AwesomeAssertions and Shouldly.
 
-This repository was forked from the original upstream project at [serilog-contrib/SerilogSinksInMemory](https://github.com/serilog-contrib/SerilogSinksInMemory) (earlier hosted at [sandermvanvliet/SerilogSinksInMemory](https://github.com/sandermvanvliet/SerilogSinksInMemory)).
-It is maintained here as **`DragoAnt.*` NuGet packages** while keeping the same `Serilog.Sinks.InMemory*` namespaces and assembly names as upstream.
+[![Build](https://img.shields.io/github/actions/workflow/status/DragoAnt/SerilogSinksInMemory/dotnet.yml?branch=main)](https://github.com/DragoAnt/SerilogSinksInMemory/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/DragoAnt.Serilog.Sinks.InMemory)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory)
+[![Downloads](https://img.shields.io/nuget/dt/DragoAnt.Serilog.Sinks.InMemory)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory)
+[![License](https://img.shields.io/github/license/DragoAnt/SerilogSinksInMemory)](https://github.com/DragoAnt/SerilogSinksInMemory/blob/main/LICENSE)
+![.NET](https://img.shields.io/badge/.NET-netstandard2.0-512BD4)
 
-## Build status
+## In short
 
-[![build-and-test](https://github.com/vfofanov/SerilogSinksInMemory/actions/workflows/dotnet.yml/badge.svg)](https://github.com/vfofanov/SerilogSinksInMemory/actions/workflows/dotnet.yml)
-[![release](https://github.com/vfofanov/SerilogSinksInMemory/actions/workflows/release.yml/badge.svg)](https://github.com/vfofanov/SerilogSinksInMemory/actions/workflows/release.yml)
+- **What:** write logs to an `InMemorySink` in your tests, then assert on them — template, count, level, properties, destructured objects — instead of verifying calls on a mocked `ILogger`.
+- **One assertion API, three frameworks:** the assertions package detects FluentAssertions 5-8, AwesomeAssertions 8-9 or Shouldly 4 in your test project and reports failures through it.
+- **A maintained fork** of [serilog-contrib/SerilogSinksInMemory](https://github.com/serilog-contrib/SerilogSinksInMemory), published as `DragoAnt.*` packages; namespaces and assembly names stay `Serilog.Sinks.InMemory*`, so switching is a package-id change. What differs from upstream: [docs/differences-from-upstream.md](./docs/differences-from-upstream.md).
 
-[![NuGet DragoAnt.Serilog.Sinks.InMemory](https://buildstats.info/nuget/DragoAnt.Serilog.Sinks.InMemory)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory/)
-[![NuGet DragoAnt.Serilog.Sinks.InMemory.Assertions](https://buildstats.info/nuget/DragoAnt.Serilog.Sinks.InMemory.Assertions)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory.Assertions/)
-[![NuGet DragoAnt.Assertions](https://buildstats.info/nuget/DragoAnt.Assertions)](https://www.nuget.org/packages/DragoAnt.Assertions/)
-[![NuGet DragoAnt.Assertions.Abstractions](https://buildstats.info/nuget/DragoAnt.Assertions.Abstractions)](https://www.nuget.org/packages/DragoAnt.Assertions.Abstractions/)
+## Packages
 
-## Maintainers
+| Package | What it is | NuGet |
+| --- | --- | --- |
+| `DragoAnt.Serilog.Sinks.InMemory` | The sink | [![NuGet](https://img.shields.io/nuget/v/DragoAnt.Serilog.Sinks.InMemory)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory) |
+| `DragoAnt.Serilog.Sinks.InMemory.Assertions` | `sink.Should()…` log assertions | [![NuGet](https://img.shields.io/nuget/v/DragoAnt.Serilog.Sinks.InMemory.Assertions)](https://www.nuget.org/packages/DragoAnt.Serilog.Sinks.InMemory.Assertions) |
+| `DragoAnt.Assertions` | Detects the assertion framework at run time and loads its adapter | [![NuGet](https://img.shields.io/nuget/v/DragoAnt.Assertions)](https://www.nuget.org/packages/DragoAnt.Assertions) |
+| `DragoAnt.Assertions.Abstractions` | Framework-agnostic contracts for writing your own assertions | [![NuGet](https://img.shields.io/nuget/v/DragoAnt.Assertions.Abstractions)](https://www.nuget.org/packages/DragoAnt.Assertions.Abstractions) |
+| `DragoAnt.Assertions.Serilog`, `.Serilog.Abstractions` | The Serilog-specific adapters and contracts behind the assertions package | [![NuGet](https://img.shields.io/nuget/v/DragoAnt.Assertions.Serilog)](https://www.nuget.org/packages/DragoAnt.Assertions.Serilog) |
 
-Stable releases and beta/prerelease publishing through GitHub Actions are documented in [RELEASING.md](RELEASING.md).
+You normally install only the first two; the rest come in as dependencies.
 
-## Public differences from `2.0.0.0`
+## Install
 
-Compared with tag `2.0.0.0`, this fork currently differs in the following user-visible ways:
-
-- NuGet package IDs are `DragoAnt.Serilog.Sinks.InMemory` and `DragoAnt.Serilog.Sinks.InMemory.Assertions`. Namespaces and assembly names remain `Serilog.Sinks.InMemory*`.
-- Assertion framework discovery and adapter loading are now encapsulated in standalone packages `DragoAnt.Assertions` and `DragoAnt.Assertions.Abstractions`.
-- Packages now target `netstandard2.0` instead of `netstandard2.1`, widening compatibility for older test projects.
-- `WriteTo.InMemory(outputTemplate: ...)` is no longer part of the public API. Use `WriteTo.InMemory()` for the default singleton sink, or `WriteTo.InMemory(sink, ...)` to write into an explicit `InMemorySink` instance.
-- The sink and assertions APIs now support predicate-based filtering via `InMemorySink.Snapshot(Func<LogEvent, bool>)`, `HaveMessage(Func<LogEvent, bool>, ...)`, and `NotHaveMessage(Func<LogEvent, bool>, ...)`.
-- `InMemorySink` now uses a debugger proxy so watch windows show a friendlier view of each log event, including rendered message, template, level, properties, exception, and the original `LogEvent`.
-- Assertion abstractions now expose `Subject`, and top-level assertion types provide `ToAssertion()` helpers for building custom assertion extensions in a framework-agnostic way.
-- NuGet consumption of the assertions package is more reliable: packaged assertion adapters are exposed transitively, framework detection probes `AppContext.BaseDirectory`, and `AwesomeAssertions` is preferred when both it and `FluentAssertions` could otherwise match.
-
-## Usage
-
-To just use the sink, add the `DragoAnt.Serilog.Sinks.InMemory` NuGet package:
-
-`dotnet` CLI:
-
-```bash
+```sh
 dotnet add package DragoAnt.Serilog.Sinks.InMemory
-```
-
-PowerShell:
-
-```PowerShell
-Install-Package DragoAnt.Serilog.Sinks.InMemory
-```
-
-But it's better with assertions so you'll also want to add the `DragoAnt.Serilog.Sinks.InMemory.Assertions` NuGet package:
-
-`dotnet` CLI:
-
-```bash
 dotnet add package DragoAnt.Serilog.Sinks.InMemory.Assertions
 ```
 
-PowerShell:
-
-```PowerShell
-Install-Package DragoAnt.Serilog.Sinks.InMemory.Assertions
-```
-
-### Using DragoAnt.Assertions directly
-
-`DragoAnt.Assertions` is the framework-agnostic assertion bridge used by this repository.
-Use it when you want to write one extension method that works across FluentAssertions, AwesomeAssertions, and Shouldly without branching per framework.
-
-`dotnet` CLI:
-
-```bash
-dotnet add package DragoAnt.Assertions
-dotnet add package FluentAssertions
-```
-
-PowerShell:
-
-```PowerShell
-Install-Package DragoAnt.Assertions
-Install-Package FluentAssertions
-```
-
-You can swap `FluentAssertions` with `AwesomeAssertions` or `Shouldly`; the same extension code keeps working.
-
-## Example
-
-Let's say you have a class with method implementing some complicated business logic:
+## Quick start
 
 ```csharp
-public class ComplicatedBusinessLogic
+using Serilog;
+using Serilog.Sinks.InMemory;
+using Serilog.Sinks.InMemory.Assertions;
+using Xunit;
+
+public sealed class CheckoutTests
 {
-    private readonly ILogger _logger;
-
-    public ComplicatedBusinessLogic(ILogger logger)
+    [Fact]
+    public void Logs_the_placed_order()
     {
-        _logger = logger;
-    }
-
-    public string FirstTenCharacters(string input)
-    {
-        return input.Substring(0, 10);
-    }
-}
-```
-
-A request came in to log a message with the number of characters in the input. So to test that you can create a mock of `ILogger` and assert the method to log was called, however mock setups quickly become very messy (true: this is my opinion!) and assertions on mocks have the same problem when you start verifying values of arguments.
-
-So instead let's use Serilog and a dedicated sink for testing:
-
-```csharp
-public class WhenExecutingBusinessLogic
-{
-    public void GivenInputOfFiveCharacters_MessageIsLogged()
-    {
+        var sink = new InMemorySink();
         var logger = new LoggerConfiguration()
-            .WriteTo.InMemory()
+            .WriteTo.InMemory(sink)
             .CreateLogger();
 
-        var logic = new ComplicatedBusinessLogic(logger);
+        logger.Information("Order {OrderId} placed", 42);
 
-        logic.FirstTenCharacters("12345");
-
-        // Use the static Instance property to access the in-memory sink
-        InMemorySink.Instance
-            .Should()
-            .HaveMessage("Input is {count} characters long");
+        sink.Should()
+            .HaveMessage("Order {OrderId} placed")
+            .Appearing().Once()
+            .WithProperty("OrderId")
+            .WithValue(42);
     }
 }
 ```
 
-The test will now fail with `Expected a message to be logged with template \"Input is {count} characters long\" but didn't find any`
+A failing assertion is reported through your assertion framework, like any other failed check. `WriteTo.InMemory()` without an argument writes to the shared `InMemorySink.Instance`; pass your own sink, as above, to keep parallel tests apart.
 
-Now change the implementation to:
+More: [all assertions](./docs/assertions.md) (levels, patterns, predicates, destructured objects, custom extensions) · [sink options](./docs/sink.md) (snapshots, clearing between tests, minimum and dynamic levels).
 
-```csharp
-public string FirstTenCharacters(string input)
-{
-    _logger.Information("Input is {count} characters long", input.Length);
+## Assertions for any framework
 
-    return input.Substring(0, 10);
-}
-```
-
-Run the test again and it now passes. But how do we ensure this message is only logged once?
-
-To do that, create a new test like so:
+`DragoAnt.Assertions` lets you write one assertion helper that fails through whichever framework the test project uses — no branching per framework:
 
 ```csharp
-public void GivenInputOfFiveCharacters_MessageIsLoggedOnce()
-{
-    /* omitted for brevity */
-
-    InMemorySink.Instance
-        .Should()
-        .HaveMessage("Input is {count} characters long")
-        .Appearing().Once();
-}
-```
-
-To verify if a message is logged multiple times use `Appearing().Times(int numberOfTimes)`
-
-So now you'll want to verify that the property `count` has the expected value. This builds upon the previous test:
-
-```csharp
-public void GivenInputOfFiveCharacters_CountPropertyValueIsFive()
-{
-    /* omitted for brevity */
-
-    InMemorySink.Instance
-        .Should()
-        .HaveMessage("Input is {count} characters long")
-        .Appearing().Once()
-        .WithProperty("count")
-        .WithValue(5);
-}
-```
-
-### Asserting a message appears more than once
-
-Let's say you have a log message in a loop and you want to verify that:
-
-```csharp
-public void GivenLoopWithFiveItems_MessageIsLoggedFiveTimes()
-{
-    /* omitted for brevity */
-
-    InMemorySink.Instance
-        .Should()
-        .HaveMessage("Input is {count} characters long")
-        .Appearing().Times(5);
-}
-```
-
-### Asserting a message has a certain level
-
-Apart from a message being logged, you'll also want to verify it is of the right level. You can do that using the `WithLevel()` assertion:
-
-```csharp
-public void GivenLoopWithFiveItems_MessageIsLoggedFiveTimes()
-{
-    /* omitted for brevity */
-
-    InMemorySink.Instance
-        .Should()
-        .HaveMessage("Input is {count} characters long")
-        .Appearing().Once()
-        .WithLevel(LogEventLevel.Information);
-}
-```
-
-This also works for multiple messages:
-
-```csharp
-public void GivenLoopWithFiveItems_MessageIsLoggedFiveTimes()
-{
-    logger.Warning("Test message");
-    logger.Warning("Test message");
-    logger.Warning("Test message");
-
-    InMemorySink.Instance
-        .Should()
-        .HaveMessage("Test message")
-        .Appearing().Times(3)
-        .WithLevel(LogEventLevel.Information);
-}
-```
-
-This will fail with a message: `Expected instances of log message "Hello, world!" to have level Information, but found 3 with level Warning`
-
-### Asserting messages with a pattern
-
-Instead of matching on the exact message you can also match on a certain pattern using the `Containing()` assertion:
-
-```csharp
-InMemorySink.Instance
-   .Should()
-   .HaveMessage()
-   .Containing("some pattern")
-   .Appearing().Once();
-```
-
-which matches on log messages:
-
-- `this is some pattern`
-- `some pattern in a message`
-- `this is some pattern in a message`
-
-### Asserting messages with a predicate
-
-When matching by template or substring is not enough, you can assert using an arbitrary `Func<LogEvent, bool>` predicate:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage(
-        logEvent => logEvent.MessageTemplate.Text.Contains("404"),
-        "message containing '404'")
-    .Appearing().Once();
-```
-
-The inverse is also available through `NotHaveMessage(predicate, description)`.
-
-### Asserting messages have been logged at all (or not!)
-
-When you want to assert that a message has been logged but don't care about what message you can do that with `HaveMessage` and `Appearing`:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage()
-    .Appearing().Times(3); // Expect three messages to be logged
-```
-
-and of course the inverse is also possible when expecting no messages to be logged:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .NotHaveMessage();
-```
-
-or that a specific message is not be logged
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .NotHaveMessage("a specific message");
-```
-
-### Asserting properties on messages
-
-When you want to assert that a message has a property you can do that using the `WithProperty` assertion:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage("Message with {Property}")
-    .Appearing().Once()
-    .WithProperty("Property");
-```
-
-To then assert that it has a certain value you would use `WithValue`:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage("Message with {Property}")
-    .Appearing().Once()
-    .WithProperty("Property")
-    .WithValue("property value");
-```
-
-Asserting that a message has multiple properties can be accomplished using the `And` constraint:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage("Message with {Property1} and {Property2}")
-    .Appearing().Once()
-    .WithProperty("Property1")
-    .WithValue("value 1")
-    .And
-    .WithProperty("Property2")
-    .WithValue("value 2");
-```
-
-When you have a log message that appears a number of times and you want to assert that the value of the log property has the expected values you can do that using the `WithValues` assertion:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage("Message with {Property1} and {Property2}")
-    .Appearing().Times(3)
-    .WithProperty("Property1")
-    .WithValue("value 1", "value 2", "value 3")
-```
-
-> **Note:** `WithValue` takes an array of values.
-
-Sometimes you might want to use assertions like `BeLessThanOrEqual()` or `HaveLength()` and in those cases `WithValue` is not very helpful.
-Instead you can use `WhichValue<T>()`  to access the value of the log property:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage()
-    .Appearing().Once()
-    .WithProperty("PropertyOne")
-    .WhichValue<string>()
-    .Should()
-    .HaveLength(3);
-```
-
-If the type of the value of the log property does not match the generic type parameter the `WhichValue<T>` method will throw an exception.
-
-> **Note:** This only works for scalar values. When you pass an object as the property value when logging a message Serilog converts that into a string.
-
-### Asserting a property with a destructured object
-
-If you use [object destructuring](https://github.com/serilog/serilog/wiki/Structured-Data#preserving-object-structure):
-
-```csharp
-var someObject = new { Foo = "bar", Baz = "quux" };
-logger.Information("Hello {@SomeObject}", someObject);
-```
-
-and want to assert on properties of the _destructured object_ you can use the `HavingADestructuredObject()` assertion like so:
-
-```csharp
-InMemorySink.Instance
-    .Should()
-    .HaveMessage("Hello {@SomeObject}")
-    .Appearing().Once()
-    .WithProperty("SomeObject")
-    .HavingADestructuredObject()
-    .WithProperty("Foo")
-    .WithValue("bar");
-```
-
-When the property `SomeObject` doesn't hold a destructured object the assertion will fail with the message: `"Expected message "Hello {NotDestructured}" to have a property "NotDestructured" that holds a destructured object but found a scalar value"`
-
-### Building custom assertion extensions
-
-All assertion abstraction interfaces expose a `Subject` property. In addition, top-level assertion types implement `IAssertionsExtension`, so extension authors can call `ToAssertion()` and reuse framework-aware failure handling.
-
-#### Framework-independent extension
-
-```csharp
-using System;
-using System.Linq;
 using DragoAnt.Assertions;
-using Serilog.Sinks.InMemory.Assertions;
 
-public static class CustomLogEventAssertions
-{
-    public static LogEventsAssertions HaveAtLeast(
-        this LogEventsAssertions assertions,
-        int count,
-        string because = "",
-        params object[] becauseArgs)
-    {
-        var extension = assertions.ToAssertion();
+var framework = AssertionUtils.CreateAssertionsFactory().AssertionFramework;
 
-        extension.Assert(
-            assertions.Subject.Count >= count,
-            new FailMessage(
-                "Expected at least {0} matching log events, but found {1}.",
-                count,
-                assertions.Subject.Count),
-            because,
-            becauseArgs);
-
-        return assertions;
-    }
-}
+framework.Assert(total > 0, new FailMessage("Expected a positive total, but found {0}.", total));
 ```
 
-#### Idempotent extension pattern
+Log-assertion types expose `Subject` and `ToAssertion()`, so a custom extension such as `HaveAtLeast(3)` is a few lines: see [building custom assertion extensions](./docs/assertions.md#building-custom-assertion-extensions).
 
-Keep custom assertions read-only and deterministic:
+## Compatibility
 
-- do not mutate `Subject`
-- compute result from current state only
-- return the same assertion object for chaining
+The packages target `netstandard2.0` and depend on Serilog 4.x. The assertions support FluentAssertions 5, 6, 7 and 8, AwesomeAssertions 8 and 9, and Shouldly 4; when both AwesomeAssertions and FluentAssertions could match, AwesomeAssertions wins.
 
-```csharp
-using System;
-using System.Linq;
-using DragoAnt.Assertions;
-using Serilog.Sinks.InMemory.Assertions;
+## Changelog and releases
 
-public static class CustomLogEventAssertions
-{
-    public static LogEventsAssertions HaveUniqueMessageTemplates(
-        this LogEventsAssertions assertions,
-        string because = "",
-        params object[] becauseArgs)
-    {
-        var templates = assertions.Subject
-            .Select(e => e.MessageTemplate.Text)
-            .ToArray();
+[Changelog.md](./Changelog.md) · maintainers: [RELEASING.md](./RELEASING.md).
 
-        var uniqueCount = templates
-            .Distinct(StringComparer.Ordinal)
-            .Count();
+## License
 
-        assertions.ToAssertion().Assert(
-            uniqueCount == templates.Length,
-            new FailMessage(
-                "Expected matching log events to have unique templates, but found {0} duplicates.",
-                templates.Length - uniqueCount),
-            because,
-            becauseArgs);
-
-        return assertions;
-    }
-}
-```
-
-These extensions are framework-idempotent: the same implementation and failure message shape are used no matter whether the runtime framework is FluentAssertions, AwesomeAssertions, or Shouldly.
-
-## Clearing log events between tests
-
-Depending on your test framework and test setup you may want to ensure that the log events captured by the `InMemorySink` are cleared so tests
-are not interfering with eachother. To enable this, the `InMemorySink` implements the [`IDisposable`](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable?view=netstandard-2.0) interface.
-When `Dispose()` is called the `LogEvents` collection is cleared.
-
-It will depend on the test framework or your test if you need this feature. With xUnit this feature is not necessary as it isolates each test in its own instance of the test class which means that they all
-have their own instance of the `InMemorySink`. MSTest however has a different approach and there you may want to use this feature as follows:
-
-```csharp
-[TestClass]
-public class WhenDemonstratingDisposableFeature
-{
-    private Logger _logger;
-
-    [TestInitialize]
-    public void Initialize()
-    {
-        _logger?.Dispose();
-
-        _logger = new LoggerConfiguration()
-            .WriteTo.InMemory()
-            .CreateLogger();
-    }
-
-    [TestMethod]
-    public void GivenAFoo_BarIsBlah()
-    {
-        _logger.Information("Foo");
-
-        InMemorySink.Instance
-            .Should()
-            .HaveMessage("Foo");
-    }
-
-    [TestMethod]
-    public void GivenABar_BazIsQuux()
-    {
-        _logger.Information("Bar");
-
-        InMemorySink.Instance
-            .Should()
-            .HaveMessage("Bar");
-    }
-}
-```
-
-this approach ensures that the `GivenABar_BazIsQuux` does not see any messages logged in a previous test.
-
-## Creating a logger
-
-Loggers are created using a LoggerConfiguration object.
-A default initiation would be as follows:
-
-```csharp
-var logger = new LoggerConfiguration()
-    .WriteTo.InMemory()
-    .CreateLogger();
-```
-
-### Using an explicit sink instance
-
-By default `WriteTo.InMemory()` uses `InMemorySink.Instance`. When you want to isolate a specific sink instance, pass it explicitly:
-
-```csharp
-var sink = new InMemorySink();
-var logger = new LoggerConfiguration()
-    .WriteTo.InMemory(sink)
-    .CreateLogger();
-```
-
-### Snapshots
-
-`Snapshot()` creates a read-only copy of the current events so later writes do not affect the assertion target.
-You can also filter while taking the snapshot:
-
-```csharp
-var errorsOnly = sink.Snapshot(logEvent => logEvent.Level >= LogEventLevel.Error);
-```
-
-### Debugger experience
-
-When inspecting `InMemorySink` in a debugger, a debugger proxy presents the captured events as an easy-to-read list with rendered message, template, level, properties, exception, and the original `LogEvent`.
-
-### Minimum level
-
-In this example only Information level logs and higher will be written to the InMemorySink.
-
-```csharp
-var logger = new LoggerConfiguration()
-    .WriteTo.InMemory(restrictedToMinimumLevel: Events.LogEventLevel.Information)
-    .CreateLogger();
-
-```
-
-**Default Level** - if no MinimumLevel is specified, then Verbose level events and [higher](https://github.com/serilog/serilog/wiki/Configuration-Basics#minimum-level) will be processed.
-
-### Dynamic levels
-
-If an app needs dynamic level switching, the first step is to create an instance of LoggingLevelSwitch when the logger is being configured:
-
-```csharp
-var levelSwitch = new LoggingLevelSwitch();
-```
-
-This object defaults the current minimum level to Information, so to make logging more restricted, set its minimum level up-front:
-
-```csharp
-levelSwitch.MinimumLevel = LogEventLevel.Warning;
-```
-
-When configuring the logger, provide the switch using MinimumLevel.ControlledBy():
-
-```csharp
-var log = new LoggerConfiguration()
-    .MinimumLevel.ControlledBy(levelSwitch)
-    .WriteTo.InMemory()
-    .CreateLogger();
-```
-
-Now, events written to the logger will be filtered according to the switch’s MinimumLevel property.
-
-To turn the level up or down at runtime, perhaps in response to a command sent over the network, change the property:
-
-```csharp
-levelSwitch.MinimumLevel = LogEventLevel.Verbose;
-log.Verbose("This will now be logged");
-```
+[MIT](./LICENSE). Originally created by Sander van Vliet; this fork is maintained by DragoAnt.
